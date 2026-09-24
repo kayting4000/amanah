@@ -1,0 +1,38 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: amanah_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-amanah_db}
+      MYSQL_USER: ${DB_USERNAME:-amanah_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-amanah_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - amanah_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpass}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: amanah_app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/${DB_NAME:-amanah_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USERNAME: ${DB_USERNAME:-amanah_user}
+      DB_PASSWORD: ${DB_PASSWORD:-amanah_pass}
+      JWT_SECRET: ${JWT_SECRET:-amanah_jwt_secret_replace_in_production_min_32_chars}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      SERVER_PORT: ${SERVER_PORT:-8080}
+    ports:
+      - "8080:8080"
+    restart: on-failure
+
+volumes:
+  amanah_mysql_data:
