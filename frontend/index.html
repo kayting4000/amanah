@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMANAH | Banking workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="loginView" class="auth-layout">
+      <div class="brand-panel">
+        <div class="brand-mark">A</div>
+        <p class="eyebrow">AMANAH BANKING</p>
+        <h1>Move money with clarity.</h1>
+        <p class="brand-copy">A calm, transparent workspace for everyday accounts, balances, and transfers.</p>
+        <div class="assurance"><span class="pulse"></span><span>Secure session · JWT protected</span></div>
+      </div>
+      <div class="auth-card">
+        <div class="card-heading">
+          <p class="eyebrow">WELCOME BACK</p>
+          <h2>Sign in to your workspace</h2>
+          <p>Use your AMANAH account credentials to continue.</p>
+        </div>
+        <form id="loginForm">
+          <label>Username<input id="username" name="username" autocomplete="username" required placeholder="admin"></label>
+          <label>Password<input id="password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••"></label>
+          <button class="primary-button" type="submit">Sign in <span>→</span></button>
+          <p id="loginError" class="form-error" role="alert"></p>
+        </form>
+        <p class="demo-note">Local demo account: <strong>admin</strong> / <strong>Admin@1234</strong></p>
+      </div>
+    </section>
+
+    <section id="appView" class="app-layout hidden">
+      <header class="topbar">
+        <div class="brand-inline"><div class="brand-mark small">A</div><span>AMANAH</span></div>
+        <div class="topbar-actions"><span id="userBadge" class="user-badge"></span><button id="logoutButton" class="ghost-button">Sign out</button></div>
+      </header>
+      <div class="dashboard">
+        <div class="welcome-row"><div><p class="eyebrow">PERSONAL OVERVIEW</p><h1>Good day, <span id="welcomeName">there</span>.</h1></div><button id="refreshButton" class="icon-button" title="Refresh accounts">↻</button></div>
+        <div id="notice" class="notice hidden" role="status"></div>
+        <div class="summary-grid">
+          <article class="balance-card"><div class="card-top"><span>Total balance</span><span class="status-dot">● Live</span></div><strong id="totalBalance">₱0.00</strong><p>Across all active accounts</p></article>
+          <article class="metric-card"><span>Accounts</span><strong id="accountCount">0</strong><p>Open accounts</p></article>
+          <article class="metric-card"><span>Recent activity</span><strong id="activityCount">0</strong><p>Transactions shown</p></article>
+        </div>
+        <div class="content-grid">
+          <section class="panel accounts-panel"><div class="panel-heading"><div><p class="eyebrow">YOUR ACCOUNTS</p><h2>Money, organized.</h2></div><button id="newAccountButton" class="secondary-button">+ New account</button></div><div id="accountsList" class="accounts-list"><div class="empty-state">Loading your accounts...</div></div></section>
+          <section class="panel activity-panel"><div class="panel-heading"><div><p class="eyebrow">LATEST MOVEMENT</p><h2>Activity</h2></div></div><div id="activityList" class="activity-list"><div class="empty-state">Your latest transactions will appear here.</div></div></section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="actionDialog"><form method="dialog" id="actionForm"><div class="dialog-heading"><button class="close-button" value="cancel" aria-label="Close">×</button><p class="eyebrow" id="dialogEyebrow">ACCOUNT ACTION</p><h2 id="dialogTitle">Move money</h2><p id="dialogDescription"></p></div><div id="dialogFields"></div><p id="actionError" class="form-error"></p><button class="primary-button" value="default" type="submit" id="actionSubmit">Continue <span>→</span></button></form></dialog>
+  <script src="./app.js"></script>
+</body>
+</html>
