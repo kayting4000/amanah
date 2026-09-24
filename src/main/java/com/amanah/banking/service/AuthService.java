@@ -10,6 +10,7 @@ import com.amanah.banking.repository.CustomerRepository;
 import com.amanah.banking.repository.UserRepository;
 import com.amanah.banking.security.JwtUtil;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,16 +44,20 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         user.setRole(User.Role.CUSTOMER);
         user.setStatus(User.UserStatus.ACTIVE);
-        Long userId = userRepository.save(user);
+        try {
+            Long userId = userRepository.save(user);
 
-        Customer customer = new Customer();
-        customer.setUserId(userId);
-        customer.setFirstName(req.getFirstName());
-        customer.setMiddleName(req.getMiddleName());
-        customer.setLastName(req.getLastName());
-        customer.setPhone(req.getPhone());
-        customer.setAddress(req.getAddress());
-        customerRepository.save(customer);
+            Customer customer = new Customer();
+            customer.setUserId(userId);
+            customer.setFirstName(req.getFirstName());
+            customer.setMiddleName(req.getMiddleName());
+            customer.setLastName(req.getLastName());
+            customer.setPhone(req.getPhone());
+            customer.setAddress(req.getAddress());
+            customerRepository.save(customer);
+        } catch (DataIntegrityViolationException ex) {
+            throw new DuplicateResourceException("Username, email, or phone is already registered");
+        }
 
         String token = jwtUtil.generateToken(req.getUsername(), User.Role.CUSTOMER.name());
         return new AuthResponse(token, req.getUsername(), User.Role.CUSTOMER.name());

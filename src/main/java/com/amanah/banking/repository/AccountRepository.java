@@ -58,8 +58,18 @@ public class AccountRepository {
         return jdbc.query(sql, rowMapper, id).stream().findFirst();
     }
 
+    public Optional<Account> findByIdForUpdate(Long id) {
+        String sql = "SELECT * FROM accounts WHERE id = ? FOR UPDATE";
+        return jdbc.query(sql, rowMapper, id).stream().findFirst();
+    }
+
     public Optional<Account> findByAccountNumber(String accountNumber) {
         String sql = "SELECT * FROM accounts WHERE account_number = ?";
+        return jdbc.query(sql, rowMapper, accountNumber).stream().findFirst();
+    }
+
+    public Optional<Account> findByAccountNumberForUpdate(String accountNumber) {
+        String sql = "SELECT * FROM accounts WHERE account_number = ? FOR UPDATE";
         return jdbc.query(sql, rowMapper, accountNumber).stream().findFirst();
     }
 

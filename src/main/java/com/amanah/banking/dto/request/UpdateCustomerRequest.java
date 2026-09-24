@@ -1,5 +1,6 @@
 package com.amanah.banking.dto.request;
 
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class UpdateCustomerRequest {
@@ -13,6 +14,7 @@ public class UpdateCustomerRequest {
     private String lastName;
 
     @Size(min = 7, max = 20)
+    @Pattern(regexp = "^\\+?[0-9 ()-]{7,20}$", message = "Phone format is invalid")
     private String phone;
 
     @Size(max = 255)

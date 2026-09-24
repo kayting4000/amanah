@@ -206,3 +206,92 @@ src/main/java/com/amanah/banking/
 ├── service/        # business logic
 └── util/           # account-number / reference generators
 src/main/resources/db/migration/   # Flyway SQL migrations
+
+## Database Design
+
+```mermaid
+erDiagram
+  USERS ||--|| CUSTOMERS : has
+  CUSTOMERS ||--o{ ACCOUNTS : owns
+  ACCOUNTS ||--o{ TRANSACTIONS : records
+  USERS {
+    BIGINT id PK
+    VARCHAR username UK
+    VARCHAR email UK
+    VARCHAR password_hash
+    ENUM role
+    ENUM status
+  }
+  CUSTOMERS {
+    BIGINT id PK
+    BIGINT user_id FK
+    VARCHAR phone UK
+  }
+  ACCOUNTS {
+    BIGINT id PK
+    BIGINT customer_id FK
+    VARCHAR account_number UK
+    DECIMAL balance
+    ENUM status
+  }
+  TRANSACTIONS {
+    BIGINT id PK
+    VARCHAR reference_number UK
+    BIGINT account_id FK
+    BIGINT related_account_id FK
+    DECIMAL amount
+    DECIMAL balance_before
+    DECIMAL balance_after
+  }
+```
+
+## Data Flow
+
+### Login
+
+```mermaid
+flowchart TD
+  A[Client] --> B[AuthController]
+  B --> C[AuthService]
+  C --> D[UserRepository]
+  D --> E[Parameterized SQL]
+  E --> F[(MySQL)]
+  C --> G[BCrypt verification and JWT generation]
+  G --> H[AuthResponse]
+```
+
+### Transfer
+
+```mermaid
+flowchart TD
+  A[Client] --> B[TransferController]
+  B --> C[TransactionService]
+  C --> D[Begin transaction]
+  D --> E[Lock accounts in account-number order]
+  E --> F[Atomic debit]
+  F --> G[Atomic credit]
+  G --> H[Insert TRANSFER_OUT and TRANSFER_IN records]
+  H --> I[Commit]
+  I --> J[Response]
+```
+
+## Security Notes
+
+- Use `.env.example` as a template and provide real values through environment variables.
+- Never commit `.env`, database passwords, or production JWT secrets.
+- Change the seeded local admin password before any non-local deployment.
+- Use TLS for database and HTTP connections outside local Docker development.
+- Keep bearer tokens out of browser cookies unless CSRF protection is enabled.
+- Run with non-debug logging in production.
+- User suspension disables authentication for existing JWT requests because the JWT filter reloads the current user status.
+
+## Verification Checklist
+
+- [x] Java 21 Spring Boot application builds in Docker.
+- [x] Flyway migrations reproducibly create the schema.
+- [x] Registration, login, JWT authorization, accounts, deposits, withdrawals, transfers, and history are implemented.
+- [x] Money uses `BigDecimal`, SQL `DECIMAL`, and atomic balance updates.
+- [x] Transfer operations lock both accounts in deterministic order and roll back as one transaction.
+- [x] Validation and centralized JSON exception handling are enabled.
+- [x] Unit tests cover authentication, account services, transfers, admin behavior, and generators.
+- [ ] Deploy with production secrets, TLS, monitoring, backups, and a managed database.

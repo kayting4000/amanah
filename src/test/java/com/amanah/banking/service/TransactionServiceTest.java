@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,6 +50,7 @@ class TransactionServiceTest {
     @Test
     void deposit_success() {
         when(accountService.getActiveAccountById(1L)).thenReturn(account);
+        when(accountRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(account));
         when(accountRepository.deposit(eq(1L), any(BigDecimal.class))).thenReturn(1);
         when(transactionRepository.save(any(Transaction.class))).thenReturn(10L);
 
@@ -65,6 +67,7 @@ class TransactionServiceTest {
     @Test
     void deposit_atomicUpdateFails_throws() {
         when(accountService.getActiveAccountById(1L)).thenReturn(account);
+        when(accountRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(account));
         when(accountRepository.deposit(eq(1L), any(BigDecimal.class))).thenReturn(0);
 
         DepositRequest req = new DepositRequest();
@@ -78,6 +81,7 @@ class TransactionServiceTest {
     @Test
     void withdraw_success() {
         when(accountService.getActiveAccountById(1L)).thenReturn(account);
+        when(accountRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(account));
         when(accountRepository.withdraw(eq(1L), any(BigDecimal.class))).thenReturn(1);
         when(transactionRepository.save(any(Transaction.class))).thenReturn(11L);
 
@@ -93,6 +97,7 @@ class TransactionServiceTest {
     @Test
     void withdraw_insufficientBalance_throws() {
         when(accountService.getActiveAccountById(1L)).thenReturn(account);
+        when(accountRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(account));
         when(accountRepository.withdraw(eq(1L), any(BigDecimal.class))).thenReturn(0);
 
         WithdrawRequest req = new WithdrawRequest();
@@ -114,6 +119,8 @@ class TransactionServiceTest {
 
         when(accountService.getActiveAccountByNumber("AMN000000001")).thenReturn(account);
         when(accountService.getActiveAccountByNumber("AMN000000002")).thenReturn(destination);
+        when(accountRepository.findByAccountNumberForUpdate("AMN000000001")).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumberForUpdate("AMN000000002")).thenReturn(Optional.of(destination));
         when(accountRepository.withdraw(eq(1L), any(BigDecimal.class))).thenReturn(1);
         when(accountRepository.deposit(eq(2L), any(BigDecimal.class))).thenReturn(1);
         when(transactionRepository.save(any(Transaction.class))).thenReturn(1L);
@@ -151,6 +158,8 @@ class TransactionServiceTest {
 
         when(accountService.getActiveAccountByNumber("AMN000000001")).thenReturn(account);
         when(accountService.getActiveAccountByNumber("AMN000000002")).thenReturn(destination);
+        when(accountRepository.findByAccountNumberForUpdate("AMN000000001")).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumberForUpdate("AMN000000002")).thenReturn(Optional.of(destination));
         when(accountRepository.withdraw(eq(1L), any(BigDecimal.class))).thenReturn(0);
 
         TransferRequest req = new TransferRequest();

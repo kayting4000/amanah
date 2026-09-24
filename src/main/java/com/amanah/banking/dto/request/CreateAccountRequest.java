@@ -1,9 +1,9 @@
 package com.amanah.banking.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public class CreateAccountRequest {
-    @NotNull
+    @NotBlank
     private String accountType; // SAVINGS or WADIAH
 
     public String getAccountType() { return accountType; }

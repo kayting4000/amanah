@@ -6,7 +6,7 @@ public class RegisterRequest {
     @NotBlank @Size(min = 3, max = 50)
     private String username;
 
-    @NotBlank @Email
+    @NotBlank @Email @Size(max = 100)
     private String email;
 
     @NotBlank @Size(min = 8, max = 100)
@@ -22,6 +22,7 @@ public class RegisterRequest {
     private String lastName;
 
     @NotBlank @Size(min = 7, max = 20)
+    @Pattern(regexp = "^\\+?[0-9 ()-]{7,20}$", message = "Phone format is invalid")
     private String phone;
 
     @Size(max = 255)

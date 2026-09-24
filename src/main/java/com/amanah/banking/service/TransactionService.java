@@ -38,6 +38,9 @@ public class TransactionService {
     public TransactionResponse deposit(String username, Long accountId, DepositRequest req) {
         Account account = accountService.getActiveAccountById(accountId);
         accountService.verifyOwnership(username, account);
+        account = accountRepository.findByIdForUpdate(accountId)
+            .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        requireActive(account);
 
         BigDecimal balanceBefore = account.getBalance();
         int rows = accountRepository.deposit(accountId, req.getAmount());
@@ -58,6 +61,9 @@ public class TransactionService {
     public TransactionResponse withdraw(String username, Long accountId, WithdrawRequest req) {
         Account account = accountService.getActiveAccountById(accountId);
         accountService.verifyOwnership(username, account);
+        account = accountRepository.findByIdForUpdate(accountId)
+            .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        requireActive(account);
 
         BigDecimal balanceBefore = account.getBalance();
         // Atomic SQL: UPDATE ... WHERE balance >= amount
@@ -87,6 +93,19 @@ public class TransactionService {
 
         Account source = accountService.getActiveAccountByNumber(req.getSourceAccountNumber());
         Account destination = accountService.getActiveAccountByNumber(req.getDestinationAccountNumber());
+
+        String firstAccountNumber = source.getAccountNumber().compareTo(destination.getAccountNumber()) < 0
+            ? source.getAccountNumber() : destination.getAccountNumber();
+        String secondAccountNumber = firstAccountNumber.equals(source.getAccountNumber())
+            ? destination.getAccountNumber() : source.getAccountNumber();
+        Account firstLocked = accountRepository.findByAccountNumberForUpdate(firstAccountNumber)
+            .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        Account secondLocked = accountRepository.findByAccountNumberForUpdate(secondAccountNumber)
+            .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        source = source.getAccountNumber().equals(firstLocked.getAccountNumber()) ? firstLocked : secondLocked;
+        destination = destination.getAccountNumber().equals(firstLocked.getAccountNumber()) ? firstLocked : secondLocked;
+        requireActive(source);
+        requireActive(destination);
 
         accountService.verifyOwnership(username, source);
 
@@ -163,5 +182,12 @@ public class TransactionService {
         tx.setBalanceAfter(after);
         tx.setDescription(description);
         return tx;
+    }
+
+    private void requireActive(Account account) {
+        if (account.getStatus() != Account.AccountStatus.ACTIVE) {
+            throw new com.amanah.banking.exception.AccountNotActiveException(
+                "Account " + account.getAccountNumber() + " is " + account.getStatus());
+        }
     }
 }
